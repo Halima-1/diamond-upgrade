@@ -8,11 +8,16 @@ contract ERC721StakingFacet {
     event NFTStaked(uint256 indexed tokenId, address indexed staker);
     event NFTUnstaked(uint256 indexed tokenId);
 
+    // Custom Errors
+    error NOT_NFT_OWNER();
+    error NOT_STAKER();
+    error STAKING_NOT_ACTIVE();
+
     function stakeNFT(uint256 _tokenId) external {
         AppStorage storage s = LibAppStorage.appStorage();
         ERC721Facet nft = ERC721Facet(address(this));
         
-        if (nft.ownerOf(_tokenId) != msg.sender) revert("not the owner");
+        if(nft.ownerOf(_tokenId) != msg.sender) revert NOT_NFT_OWNER();
 
         nft.transferFrom(msg.sender, address(this), _tokenId);
 
@@ -29,8 +34,8 @@ contract ERC721StakingFacet {
         AppStorage storage s = LibAppStorage.appStorage();
         StakingInfo storage info = s.stakings[_tokenId];
         
-        require(info.staker == msg.sender, " not the staker");
-        require(info.active, "not active");
+        if(info.staker != msg.sender) revert NOT_STAKER();
+        if(!info.active) revert STAKING_NOT_ACTIVE();
 
         ERC721Facet nft = ERC721Facet(address(this));
         

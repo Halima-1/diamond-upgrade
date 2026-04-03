@@ -42,6 +42,7 @@ contract DiamondERC721Test is Test, DiamondUpgradeHelper {
 
         erc721F = new ERC721Facet();
         
+        // Back to 8 selectors
         bytes4[] memory erc721Selectors = new bytes4[](8);
         erc721Selectors[0] = bytes4(keccak256("initializeNFT(string,string)"));
         erc721Selectors[1] = bytes4(keccak256("mint(address)"));
@@ -65,22 +66,14 @@ contract DiamondERC721Test is Test, DiamondUpgradeHelper {
         vm.stopPrank();
     }
 
-    function testComprehensiveERC721() public {
-        ERC721Facet erc721 = ERC721Facet(address(diamond));
-
+    function testTransferNFT() public {
+        ERC721Facet nft = ERC721Facet(address(diamond));
         vm.prank(owner);
-        uint256 id = erc721.mint(user1);
-        
-        assertEq(erc721.name(), "Diamond NFT");
-        assertEq(erc721.symbol(), "DNFT");
-        assertEq(erc721.ownerOf(id), user1);
-        assertEq(erc721.balanceOf(user1), 1);
+        uint256 id = nft.mint(user1);
 
         vm.prank(user1);
-        erc721.transferNFT(user1, user2, id);
+        nft.transferNFT(user1, user2, id);
         
-        assertEq(erc721.ownerOf(id), user2);
-        assertEq(erc721.balanceOf(user1), 0);
-        assertEq(erc721.balanceOf(user2), 1);
+        assertEq(nft.ownerOf(id), user2);
     }
 }

@@ -23,7 +23,7 @@ struct BorrowInfo {
 
 struct UpgradeProposal {
     IDiamondCut.FacetCut[] cuts;
-    address _setupAddress;
+    address init;
     bytes calldata_;
     uint256 approvals;
     bool executed;
@@ -47,7 +47,7 @@ struct AppStorage {
     mapping(address => mapping(address => uint256)) tokenAllowances;
     uint256 tokenTotalSupply;
 
-    // --- Marketplace & Lending ---
+    // --- Marketplace & Lending pool ---
     mapping(uint256 => Listing) listings;
     mapping(uint256 => StakingInfo) stakings;
     mapping(uint256 => BorrowInfo) borrowings;
@@ -57,7 +57,6 @@ struct AppStorage {
     uint256 requiredQuorum;
     mapping(address => bool) isSigner;
     uint256 proposalCount;
-    // We use a mapping for proposals because structs with mappings can't be in arrays
     mapping(uint256 => UpgradeProposal) proposals;
 }
 

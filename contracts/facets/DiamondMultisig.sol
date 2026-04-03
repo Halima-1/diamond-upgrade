@@ -44,7 +44,7 @@ contract DiamondMultisigFacet {
 
     function proposeUpgrade(
         IDiamondCut.FacetCut[] memory _cuts,
-        address _setupAddress,
+        address _init,
         bytes memory _calldata
     ) external onlySigner returns (uint256) {
         AppStorage storage s = LibAppStorage.appStorage();
@@ -54,7 +54,7 @@ contract DiamondMultisigFacet {
         for (uint i = 0; i < _cuts.length; i++) {
             p.cuts.push(_cuts[i]);
         }
-        p._setupAddress = _setupAddress;
+        p.init = _init;
         p.calldata_ = _calldata;
         p.approvals = 1;
         p.hasVoted[msg.sender] = true;
@@ -87,8 +87,7 @@ contract DiamondMultisigFacet {
         if (p.approvals < s.requiredQuorum) revert NOT_ENOUGH_APPROVALS();
         
         p.executed = true;
-        
-        LibDiamond.diamondCut(p.cuts, p._setupAddress, p.calldata_);
+        LibDiamond.diamondCut(p.cuts, p.init, p.calldata_);
         
         emit UpgradeExecuted(_proposalId);
     }
@@ -100,9 +99,9 @@ contract DiamondMultisigFacet {
     function getProposalStatus(uint256 _id) external view returns (
         uint256 approvals, 
         bool executed,
-        address _setupAddress
+        address init
     ) {
         UpgradeProposal storage p = LibAppStorage.appStorage().proposals[_id];
-        return (p.approvals, p.executed, p._setupAddress);
+        return (p.approvals, p.executed, p.init);
     }
 }
