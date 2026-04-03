@@ -4,29 +4,25 @@ pragma solidity ^0.8.24;
 import {LibAppStorage, AppStorage} from "../libraries/LibAppStorage.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
+import {IERC721} from "../interfaces/IERC721.sol";
 
-contract ERC721Facet {
+contract ERC721Facet is IERC721 {
     using Strings for uint256;
 
-    event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
-    event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId);
-    event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
-    event NFTMinted(address indexed to, uint256 tokenId);
-    event NFTTransferred(address indexed from, address indexed to, uint256 indexed tokenId);
-
+    // Custom Errors
     error NOT_INITIALIZED();
     error NOT_NFT_OWNER();
     error ADDRESS_ZERO_DETECTED();
     error UNAUTHORIZED();
     error TOKEN_DOES_NOT_EXIST();
 
-    function initializeNFT(string memory _name, string memory _symbol) external {
+    function initializeNFT(string memory _name, string memory _symbol) external override {
         AppStorage storage s = LibAppStorage.appStorage();
         s.nftName = _name;
         s.nftSymbol = _symbol;
     }
 
-    function mint(address _to) external returns (uint256) {
+    function mint(address _to) external override returns (uint256) {
         if(_to == address(0)) revert ADDRESS_ZERO_DETECTED();
         AppStorage storage s = LibAppStorage.appStorage();
         uint256 tokenId = s.nextTokenId++;
@@ -39,11 +35,11 @@ contract ERC721Facet {
         return tokenId;
     }
 
-    function name() public view returns (string memory) {
+    function name() public view override returns (string memory) {
         return LibAppStorage.appStorage().nftName;
     }
 
-    function symbol() public view returns (string memory) {
+    function symbol() public view override returns (string memory) {
         return LibAppStorage.appStorage().nftSymbol;
     }
 
@@ -52,13 +48,13 @@ contract ERC721Facet {
         return LibAppStorage.appStorage().nftBalances[_owner];
     }
 
-    function ownerOf(uint256 _tokenId) public view returns (address) {
+    function ownerOf(uint256 _tokenId) public view override returns (address) {
         address owner = LibAppStorage.appStorage().nftOwners[_tokenId];
         if(owner == address(0)) revert TOKEN_DOES_NOT_EXIST();
         return owner;
     }
 
-    function approve(address _to, uint256 _tokenId) external {
+    function approve(address _to, uint256 _tokenId) external override {
         AppStorage storage s = LibAppStorage.appStorage();
         address owner = s.nftOwners[_tokenId];
         if(msg.sender != owner && !s.nftOperatorApprovals[owner][msg.sender]) revert UNAUTHORIZED();
@@ -67,21 +63,21 @@ contract ERC721Facet {
         emit Approval(owner, _to, _tokenId);
     }
 
-    function setApprovalForAll(address _operator, bool _approved) external {
+    function setApprovalForAll(address _operator, bool _approved) external override {
         AppStorage storage s = LibAppStorage.appStorage();
         s.nftOperatorApprovals[msg.sender][_operator] = _approved;
         emit ApprovalForAll(msg.sender, _operator, _approved);
     }
 
-    function isApprovedForAll(address _owner, address _operator) external view returns (bool) {
+    function isApprovedForAll(address _owner, address _operator) external view override returns (bool) {
         return LibAppStorage.appStorage().nftOperatorApprovals[_owner][_operator];
     }
 
-    function transferFrom(address _from, address _to, uint256 _tokenId) public {
+    function transferFrom(address _from, address _to, uint256 _tokenId) public override {
         _transfer(_from, _to, _tokenId);
     }
 
-    function transferNFT(address _from, address _to, uint256 _tokenId) external {
+    function transferNFT(address _from, address _to, uint256 _tokenId) external override {
         _transfer(_from, _to, _tokenId);
         emit NFTTransferred(_from, _to, _tokenId);
     }
@@ -107,7 +103,7 @@ contract ERC721Facet {
         return (spender == owner || s.nftTokenApprovals[tokenId] == spender || s.nftOperatorApprovals[owner][spender]);
     }
 
-    function tokenURI(uint256 tokenId) public view returns (string memory) {
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
         AppStorage storage s = LibAppStorage.appStorage();
         if(s.nftOwners[tokenId] == address(0)) revert TOKEN_DOES_NOT_EXIST();
 
@@ -126,6 +122,7 @@ contract ERC721Facet {
             '<rect width="300" height="300" fill="url(#g)" rx="10"/>',
             '<rect x="10" y="10" width="280" height="280" fill="none" stroke="#fbbf24" stroke-width="1" stroke-opacity="0.2" rx="8"/>',
             '<text x="50%" y="40" text-anchor="middle" fill="#fbbf24" font-family="Arial" font-size="20" font-weight="900" style="text-transform:uppercase; letter-spacing: 2px;">', s.nftName, '</text>',
+            '<text x="50%" y="60" text-anchor="middle" fill="white" font-family="Arial" font-size="12" font-weight="200" font-style="italic">My first diamond contract NFT</text>',
             '<g transform="translate(150, 145) scale(0.55)">',
             '<path d="M0 -150 L100 -50 L0 150 L-100 -50 Z" fill="url(#d)" fill-opacity="0.8" stroke="white" stroke-width="2">',
             '<animate attributeName="fill-opacity" values="0.6;0.9;0.6" dur="3s" repeatCount="indefinite"/>',
