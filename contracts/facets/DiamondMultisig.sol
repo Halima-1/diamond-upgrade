@@ -9,6 +9,9 @@ contract DiamondMultisigFacet {
     event UpgradeProposed(uint256 indexed proposalId, address indexed proposer);
     event UpgradeApproved(uint256 indexed proposalId, address indexed signer);
     event UpgradeExecuted(uint256 indexed proposalId);
+    event SignerAdded(address indexed signer);
+    event SignerRemoved(address indexed signer);
+    event QuorumUpdated(uint256 newQuorum);
 
     error NOT_A_SIGNER();
     error REQUIRED_EXCEED_SIGNERS();
@@ -18,10 +21,19 @@ contract DiamondMultisigFacet {
     error ALREADY_VOTED();
     error ALREADY_A_SIGNER();
     error NOT_ENOUGH_APPROVALS();
+    error UNAUTHORIZED_GOVERNANCE();
 
     modifier onlySigner() {
         if (!LibAppStorage.appStorage().isSigner[msg.sender]) {
             revert NOT_A_SIGNER();
+        }
+        _;
+    }
+
+ 
+    modifier onlyDuringUpgrade() {
+        if (!LibAppStorage.appStorage().isExecutingUpgrade) {
+            revert UNAUTHORIZED_GOVERNANCE();
         }
         _;
     }
@@ -87,9 +99,53 @@ contract DiamondMultisigFacet {
         if (p.approvals < s.requiredQuorum) revert NOT_ENOUGH_APPROVALS();
         
         p.executed = true;
+        
+        // --- SECURITY LOCK ---
+        s.isExecutingUpgrade = true; // Unlock the door
         LibDiamond.diamondCut(p.cuts, p.init, p.calldata_);
+        s.isExecutingUpgrade = false; // Relock the door
+        // ---------------------
         
         emit UpgradeExecuted(_proposalId);
+    }
+
+    // function addValidSigner(address _signer) external onlyDuringUpgrade {
+    //     AppStorage storage s = LibAppStorage.appStorage();
+    //     if (_signer == address(0)) revert ADDRESS_ZERO_DETECTED();
+    //     if (s.isSigner[_signer]) revert ALREADY_A_SIGNER();
+
+    //     s.isSigner[_signer] = true;
+    //     s.signers.push(_signer);
+    //     emit SignerAdded(_signer);
+    // }
+
+    // function removeValidSigner(address _signer) external onlyDuringUpgrade {
+    //     AppStorage storage s = LibAppStorage.appStorage();
+    //     if (!s.isSigner[_signer]) revert NOT_A_SIGNER();
+
+    //     s.isSigner[_signer] = false;
+        
+    //     for (uint i = 0; i < s.signers.length; i++) {
+    //         if (s.signers[i] == _signer) {
+    //             s.signers[i] = s.signers[s.signers.length - 1];
+    //             s.signers.pop();
+    //             break;
+    //         }
+    //     }
+        
+    //     if (s.requiredQuorum > s.signers.length) {
+    //         s.requiredQuorum = s.signers.length;
+    //     }
+
+    //     emit SignerRemoved(_signer);
+    // }
+
+    function updateQuorum(uint256 _newQuorum) external onlyDuringUpgrade {
+        AppStorage storage s = LibAppStorage.appStorage();
+        if (_newQuorum == 0 || _newQuorum > s.signers.length) revert REQUIRED_EXCEED_SIGNERS();
+        
+        s.requiredQuorum = _newQuorum;
+        emit QuorumUpdated(_newQuorum);
     }
 
     function getSigners() external view returns (address[] memory) {

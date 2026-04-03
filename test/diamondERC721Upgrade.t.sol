@@ -62,7 +62,7 @@ contract DiamondERC721Test is Test, DiamondUpgradeHelper {
         
         executeDiamondCut(IDiamondCut(address(diamond)), erc721Cuts, address(0), "");
         
-        ERC721Facet(address(diamond)).initializeNFT("Diamond NFT", "DNFT");
+        ERC721Facet(address(diamond)).initializeNFT("LYMARH NFT", "LNFT");
         vm.stopPrank();
     }
 

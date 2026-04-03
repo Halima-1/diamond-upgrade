@@ -100,11 +100,10 @@ contract DiamondMultisigTest is Test, DiamondUpgradeHelper {
 
         ERC721Facet nft = ERC721Facet(address(diamond));
         vm.prank(signer1);
-        nft.initializeNFT("DAO NFT", "DNFT");
+        nft.initializeNFT("LYMARH NFT", "LNFT");
         
         uint256 id = nft.mint(user1);
         assertEq(nft.ownerOf(id), user1);
-        console.log("Upgrade Executed via MultiSig Successfully!");
         console.log("NFT Metadata URL:");
         console.log(nft.tokenURI(id));
     }

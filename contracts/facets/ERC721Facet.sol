@@ -126,7 +126,6 @@ contract ERC721Facet {
             '<rect width="300" height="300" fill="url(#g)" rx="10"/>',
             '<rect x="10" y="10" width="280" height="280" fill="none" stroke="#fbbf24" stroke-width="1" stroke-opacity="0.2" rx="8"/>',
             '<text x="50%" y="40" text-anchor="middle" fill="#fbbf24" font-family="Arial" font-size="20" font-weight="900" style="text-transform:uppercase; letter-spacing: 2px;">', s.nftName, '</text>',
-            '<text x="50%" y="60" text-anchor="middle" fill="white" font-family="Arial" font-size="12" font-weight="200" font-style="italic">My first diamond contract NFT</text>',
             '<g transform="translate(150, 145) scale(0.55)">',
             '<path d="M0 -150 L100 -50 L0 150 L-100 -50 Z" fill="url(#d)" fill-opacity="0.8" stroke="white" stroke-width="2">',
             '<animate attributeName="fill-opacity" values="0.6;0.9;0.6" dur="3s" repeatCount="indefinite"/>',
