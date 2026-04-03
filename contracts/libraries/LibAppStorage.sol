@@ -31,6 +31,7 @@ struct UpgradeProposal {
 }
 
 struct AppStorage {
+    // --- NFT (ERC721 Scratch) ---
     uint256 nextTokenId;
     string nftName;
     string nftSymbol;
@@ -39,17 +40,19 @@ struct AppStorage {
     mapping(uint256 => address) nftTokenApprovals;
     mapping(address => mapping(address => bool)) nftOperatorApprovals;
 
+    // --- ERC20 Scratch ---
     string tokenName;
     string tokenSymbol;
     mapping(address => uint256) tokenBalances;
     mapping(address => mapping(address => uint256)) tokenAllowances;
     uint256 tokenTotalSupply;
 
+    // --- Marketplace & Lending pool ---
     mapping(uint256 => Listing) listings;
     mapping(uint256 => StakingInfo) stakings;
     mapping(uint256 => BorrowInfo) borrowings;
 
-    bool isExecutingUpgrade; 
+    // --- MultiSig / Governance ---
     address[] signers;
     uint256 requiredQuorum;
     mapping(address => bool) isSigner;
